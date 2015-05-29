@@ -1,20 +1,16 @@
 /*jshint browser:true */
-/*global $:false, jQuery:false, console:false */
-var Query_, queries;
+/*global $:false, jQuery:false, console:false, escape:false */
+var Query_, queries_;
 
 $(function () {
     console.log("JS Loaded");
-
-    var query = "cat";
-
-    if (location.hash != "" && location.hash != "#")
-        query = location.hash.substr(1);
 
     function Query(q) {
         var self = this;
         this.query = q;
         this.imgs = [];
         this.urls = [];
+        this.currentIndex = 0;
         var shouldStop = false;
         this.imagesExpire = true;
 
@@ -26,17 +22,17 @@ $(function () {
             img.className = "image";
             img.onload = function () {
                 console.log("Loaded \"" + url + "\"");
-                img.style.top = "-825px";
+                img.style.top = (-250 - Math.random(Math.random() * document.body.clientHeight)) + "px";
 
                 self.imgs.push(img);
 
                 document.body.appendChild(img);
             };
-            img.style.left = Math.round(Math.random() * 100) + "%";
+            img.style.left = Math.round(Math.random() * 97) + "%";
 
-        }
+        };
 
-        this.intervalId = setInterval(function () {
+        this.intervalUpdateId = setInterval(function () {
             for (var i = 0; i < self.imgs.length; i++) {
                 var img = self.imgs[i];
 
@@ -67,6 +63,16 @@ $(function () {
 
         }, 10);
 
+        this.newImage = function () {
+            self.currentIndex++;
+            if (self.currentIndex >= self.urls.length) {
+                self.currentIndex = 0;
+            }
+
+            self.loadImage(self.urls[self.currentIndex]);
+
+        };
+
 
         var requestJSON = function (index) {
             if (shouldStop)
@@ -89,42 +95,28 @@ $(function () {
                     if (json.responseStatus == 200) {
                         var images = json.responseData.results;
 
-                        for (var i = 0; i < images.length; i++)(function () {
+                        for (var i = 0; i < images.length; i++) {
                             var img = images[i];
 
-                            setTimeout(function () {
-                                if (shouldStop)
-                                    return;
-                                self.loadImage(img.url);
+                            self.urls.push(img.url);
 
-                            }, i * Math.round(500 + Math.random() * 1000));
+                        }
 
-                        })();
+                        if (self.urls.length < 4000)
+                            requestJSON(index + 8);
 
-                        var waitFunc = function () {
-                            setTimeout(function () {
-
-                                if (document.body.childNodes.length > 35) {
-                                    waitFunc();
-                                } else {
-                                    requestJSON(index + 8);
-                                }
-
-                            }, 8000);
-                        };
-                        waitFunc();
 
                     }
 
                 });
 
 
-        }
+        };
         requestJSON(0);
 
         this.stop = function () {
             shouldStop = true;
-            clearInterval(self.intervalId);
+            clearInterval(self.intervalUpdateId);
             for (var i = 0; i < self.imgs.length; i++) {
                 var node = self.imgs[i];
                 if (node.parentNode) {
@@ -133,7 +125,7 @@ $(function () {
 
             }
             self.imgs = [];
-        }
+        };
 
 
     }
@@ -149,8 +141,9 @@ $(function () {
 
         var qStrings = hash.split(";");
         var existing = [];
+        var i;
 
-        for (var i = 0; i < queries.length; i++) {
+        for (i = 0; i < queries.length; i++) {
             var query = queries[i];
             if ($.inArray(query.query, qStrings) == -1) {
                 query.stop();
@@ -164,7 +157,7 @@ $(function () {
 
         console.log("Kept: " + existing);
 
-        for (var i = 0; i < qStrings.length; i++) {
+        for (i = 0; i < qStrings.length; i++) {
             var qString = qStrings[i];
             if ($.inArray(qString, existing) == -1) {
 
@@ -173,7 +166,7 @@ $(function () {
 
             }
         }
-    }
+    };
 
     dealWithHash(location.hash);
 
@@ -187,6 +180,18 @@ $(function () {
         document.title = "ImageStorm (" + num + ")";
 
     }, 1000);
+
+    var qIndex = 0;
+
+    setInterval(function () {
+        qIndex++;
+        if (qIndex >= queries.length) {
+            qIndex = 0;
+        }
+
+        queries[qIndex].newImage();
+
+    }, 300);
 
 
 });
