@@ -21,8 +21,7 @@ $(function () {
             img.src = url;
             img.className = "image";
             img.onload = function () {
-                console.log("Loaded \"" + url + "\"");
-                img.style.top = (-250 - Math.random(Math.random() * document.body.clientHeight)) + "px";
+                img.style.top = -250 + "px";
 
                 self.imgs.push(img);
 
@@ -176,8 +175,13 @@ $(function () {
 
     setInterval(function () {
         var num = document.body.childNodes.length;
+        var total = 0;
 
-        document.title = "ImageStorm (" + num + ")";
+        for (var i = 0; i < queries.length; i++) {
+            total += queries[i].urls.length;
+        }
+
+        document.title = "ImageStorm (" + num + " of " + total + ")";
 
     }, 1000);
 
