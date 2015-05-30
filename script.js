@@ -139,6 +139,8 @@ $(function () {
         console.log("Hash changed to: " + hash);
 
         var qStrings = hash.split(";");
+        if (hash === "")
+            qStrings = [];
         var existing = [];
         var i;
 
