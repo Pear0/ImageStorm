@@ -190,6 +190,9 @@ $(function () {
     var qIndex = 0;
 
     setInterval(function () {
+        if (queries.length === 0)
+            return;
+
         qIndex++;
         if (qIndex >= queries.length) {
             qIndex = 0;
